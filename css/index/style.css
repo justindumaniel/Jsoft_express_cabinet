@@ -1,0 +1,404 @@
+/* 全局样式重置 */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    /* 设置背景图片 */
+    background-image: url('../../css/all/bg.png');
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+    height: 100vh;
+    width: 100vw;
+    overflow: hidden;
+    font-family: 'Microsoft YaHei', sans-serif;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+.container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+/* 白色半透明操作框 */
+.box {
+    background-color: rgba(255, 255, 255, 0.85);
+    border-radius: 20px;
+    padding: 30px;
+    width: 100%;
+    max-width: 380px;
+    box-shadow: 0 4px 25px rgba(0, 0, 0, 0.15);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    z-index: 1;
+}
+
+/* 标题样式 */
+.box h2 {
+    color: #000;
+    font-size: 24px;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+/* 圆角输入框 */
+#codeInput {
+    width: 100%;
+    height: 60px;
+    font-size: 28px;
+    text-align: center;
+    border: 2px solid #ddd;
+    border-radius: 12px;
+    background-color: rgba(255, 255, 255, 0.95);
+    color: #333;
+    font-weight: bold;
+    letter-spacing: 15px;
+    padding-left: 18px;
+}
+
+#codeInput:focus {
+    outline: none;
+    border-color: #2196F3;
+}
+
+/* 数字键盘容器 */
+.keypad {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 15px;
+    justify-items: center;
+    margin: 10px 0;
+}
+
+/* 数字按钮样式 */
+.number-btn {
+    background-color: white;
+    border: none;
+    border-radius: 20px;
+    width: 80px;
+    height: 80px;
+    font-size: 28px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    color: #333;
+    font-weight: bold;
+}
+
+.number-btn:hover {
+    background-color: #f0f0f0;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.number-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 删除按钮样式 */
+.delete-btn {
+    background-color: #ff9800;
+    border: none;
+    border-radius: 20px;
+    width: 80px;
+    height: 80px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    color: white;
+    font-weight: bold;
+}
+
+.delete-btn:hover {
+    background-color: #f57c00;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.delete-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 确认按钮样式 */
+.confirm-btn {
+    background-color: #4CAF50;
+    border: none;
+    border-radius: 20px;
+    width: 80px;
+    height: 80px;
+    font-size: 18px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.1);
+    color: white;
+    font-weight: bold;
+}
+
+.confirm-btn:hover {
+    background-color: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.15);
+}
+
+.confirm-btn:active {
+    transform: translateY(0);
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* 存放文件按钮样式 */
+.store-btn {
+    position: absolute;
+    top: 30px;
+    right: 30px;
+    background-color: #2196F3;
+    color: white;
+    text-align: center;
+    line-height: 40px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: bold;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    box-shadow: 0 3px 10px rgba(33, 150, 243, 0.2);
+    z-index: 1000;
+    padding: 0 20px;
+}
+
+.store-btn:hover {
+    background-color: #1976D2;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(33, 150, 243, 0.3);
+}
+
+/* 响应式设计 - 小屏幕手机 */
+@media (max-width: 480px) {
+    .container {
+        padding: 15px;
+    }
+    
+    .box {
+        width: 100%;
+        padding: 25px 20px;
+        gap: 20px;
+        max-width: 340px;
+    }
+    
+    .keypad {
+        gap: 12px;
+    }
+    
+    .number-btn, .delete-btn, .confirm-btn {
+        width: 65px;
+        height: 65px;
+        font-size: 22px;
+    }
+    
+    .delete-btn, .confirm-btn {
+        font-size: 14px;
+    }
+    
+    .box h2 {
+        font-size: 20px;
+    }
+    
+    #codeInput {
+        height: 50px;
+        font-size: 24px;
+        letter-spacing: 10px;
+    }
+    
+    .store-btn {
+        top: 20px;
+        right: 20px;
+        line-height: 36px;
+        font-size: 12px;
+        padding: 0 15px;
+    }
+}
+
+/* 响应式设计 - 大屏幕手机和小平板 */
+@media (min-width: 481px) and (max-width: 768px) {
+    .box {
+        max-width: 450px;
+    }
+    
+    .number-btn, .delete-btn, .confirm-btn {
+        width: 85px;
+        height: 85px;
+    }
+}
+
+/* 响应式设计 - 平板和桌面 */
+@media (min-width: 769px) and (max-width: 1200px) {
+    .box {
+        max-width: 400px;
+        padding: 35px;
+        gap: 28px;
+    }
+    
+    .number-btn, .delete-btn, .confirm-btn {
+        width: 80px;
+        height: 80px;
+        font-size: 26px;
+    }
+    
+    .box h2 {
+        font-size: 24px;
+    }
+    
+    #codeInput {
+        height: 60px;
+        font-size: 28px;
+    }
+    
+    .store-btn {
+        top: 30px;
+        right: 30px;
+        line-height: 45px;
+        font-size: 16px;
+    }
+}
+
+/* 响应式设计 - 宽屏显示器 */
+@media (min-width: 1201px) {
+    .box {
+        max-width: 420px;
+        padding: 40px;
+        gap: 30px;
+    }
+    
+    .number-btn, .delete-btn, .confirm-btn {
+        width: 85px;
+        height: 85px;
+    }
+}
+
+/* 管理页面特殊样式 */
+body.admin-page {
+    overflow-y: auto;
+    height: auto;
+    min-height: 100vh;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 20px;
+}
+
+/* 管理页面容器样式 */
+.container.admin-container {
+    height: auto;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+/* 页面内弹窗样式 */
+.modal {
+    display: none; /* 默认隐藏 */
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    align-items: center;
+    justify-content: center;
+}
+
+.modal-content {
+    background-color: white;
+    border-radius: 15px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+    overflow: hidden;
+    animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    text-align: center;
+}
+
+.modal-header h3 {
+    margin: 0;
+    color: #333;
+    font-size: 20px;
+}
+
+.modal-body {
+    padding: 25px;
+    text-align: center;
+    max-height: 300px;
+    overflow-y: auto;
+    overflow-x: hidden;
+}
+
+.modal-body p {
+    margin: 10px 0;
+    color: #666;
+    font-size: 16px;
+}
+
+.countdown {
+    margin-top: 15px;
+    font-size: 18px;
+    color: #2196F3;
+    font-weight: bold;
+}
+
+.download-info {
+    margin-top: 15px;
+    padding: 10px;
+    background-color: #FFF3E0;
+    border-radius: 8px;
+    color: #F57C00;
+}
+
+.modal-footer {
+    padding: 15px 25px;
+    text-align: center;
+    border-top: 1px solid #eee;
+}
+
+.modal-btn {
+    padding: 10px 25px;
+    background-color: #2196F3;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.modal-btn:hover {
+    background-color: #1976D2;
+}
