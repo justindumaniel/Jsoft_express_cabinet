@@ -6,6 +6,16 @@
 
 ------
 
+  <img src="https://img.shields.io/github/stars/kamcdev/Jsoft_express_cabinet.svg">
+  <img src="https://img.shields.io/badge/Python-3.13.7-blue">
+  <img src="https://img.shields.io/badge/交流QQ群-984242265-purple">
+  <img src="https://img.shields.io/badge/B站-J软件官方-light">
+  <img src="https://img.shields.io/badge/官网-www.jsoftstudio.top-yellow">
+  <img src="https://img.shields.io/badge/使用提示-生产环境建议使用
+venv虚拟环境-red">
+
+------
+
 目录
 * [介绍](#介绍)
 * [部署](#部署)
