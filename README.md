@@ -16,8 +16,7 @@
 
 <img src="https://img.shields.io/badge/官网-www.jsoftstudio.top-yellow">
 
-<img src="https://img.shields.io/badge/使用提示-生产环境建议使用
-venv虚拟环境-red">
+<img src="https://img.shields.io/badge/使用提示-生产环境建议使用venv虚拟环境-red">
 
 ------
 
