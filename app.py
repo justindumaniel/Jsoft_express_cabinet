@@ -1,5 +1,6 @@
-from flask import Flask, render_template, request, redirect, url_for, jsonify, session
+from flask import Flask, render_template, request, redirect, url_for, jsonify, session, abort
 import os
+import sys
 import json
 import hashlib
 import random
@@ -11,11 +12,84 @@ import urllib.parse
 app = Flask(__name__, static_folder='.', static_url_path='/')
 app.secret_key = ''.join(random.choices(string.ascii_letters + string.digits, k=24))
 
+# IP访问限制配置
+IP_LIMIT_CONFIG = {
+    'max_attempts': 10,  # 最大失败尝试次数
+    'block_time': 5,     # 拉黑时间（分钟）
+    'blocked_ips': {},   # 存储被拉黑的IP及解除时间
+    'failed_attempts': {}  # 存储各IP的失败尝试记录
+}
+
 # 配置
 UPLOAD_FOLDER = './uploads'
 ADMIN_CONFIG_FILE = './js/all/adminset.json'
 FILE_DATA_FILE = './js/all/files_data.json'
 DEFAULT_MAX_FILE_SIZE_MB = 50
+
+# 获取用户IP地址
+def get_client_ip():
+    if request.headers.getlist('X-Forwarded-For'):
+        ip = request.headers.getlist('X-Forwarded-For')[0]
+    else:
+        ip = request.remote_addr
+    return ip
+
+# 检查IP是否被拉黑
+def is_ip_blocked(ip):
+    current_time = datetime.now().timestamp()
+    
+    # 检查并移除已过期的黑名单
+    blocked_ips_to_remove = []
+    for blocked_ip, unblock_time in IP_LIMIT_CONFIG['blocked_ips'].items():
+        if current_time > unblock_time:
+            blocked_ips_to_remove.append(blocked_ip)
+    
+    for blocked_ip in blocked_ips_to_remove:
+        del IP_LIMIT_CONFIG['blocked_ips'][blocked_ip]
+        if blocked_ip in IP_LIMIT_CONFIG['failed_attempts']:
+            del IP_LIMIT_CONFIG['failed_attempts'][blocked_ip]
+    
+    # 检查当前IP是否被拉黑
+    return ip in IP_LIMIT_CONFIG['blocked_ips']
+
+# 更新IP的失败尝试次数
+def update_failed_attempts(ip, endpoint_type):
+    # endpoint_type: 'verify_code' 或 'download_file'
+    current_time = datetime.now().timestamp()
+    
+    if ip not in IP_LIMIT_CONFIG['failed_attempts']:
+        IP_LIMIT_CONFIG['failed_attempts'][ip] = {
+            'verify_code': [],
+            'download_file': []
+        }
+    
+    # 记录这次失败尝试
+    IP_LIMIT_CONFIG['failed_attempts'][ip][endpoint_type].append(current_time)
+    
+    # 清理过期的失败记录（保留最近10分钟的）
+    cutoff_time = current_time - 10 * 60
+    IP_LIMIT_CONFIG['failed_attempts'][ip][endpoint_type] = [
+        t for t in IP_LIMIT_CONFIG['failed_attempts'][ip][endpoint_type] if t > cutoff_time
+    ]
+    
+    # 检查是否达到最大失败次数
+    if len(IP_LIMIT_CONFIG['failed_attempts'][ip][endpoint_type]) >= IP_LIMIT_CONFIG['max_attempts']:
+        # 拉黑该IP
+        block_time = current_time + IP_LIMIT_CONFIG['block_time'] * 60
+        IP_LIMIT_CONFIG['blocked_ips'][ip] = block_time
+        # 清空失败记录
+        IP_LIMIT_CONFIG['failed_attempts'][ip] = {
+            'verify_code': [],
+            'download_file': []
+        }
+        return True  # 已拉黑
+    
+    return False  # 未拉黑
+
+# 重置IP的失败尝试次数
+def reset_failed_attempts(ip, endpoint_type):
+    if ip in IP_LIMIT_CONFIG['failed_attempts']:
+        IP_LIMIT_CONFIG['failed_attempts'][ip][endpoint_type] = []
 
 # 确保目录存在
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
@@ -100,6 +174,12 @@ def check_expired_files():
     
     if expired_codes:
         save_file_data(file_data)
+
+# 禁止直接访问敏感文件
+@app.route('/js/all/adminset.json')
+@app.route('/js/all/files_data.json')
+def block_sensitive_files():
+    return abort(403, description='拒绝直接读取内部配置信息，请按正常流程调用api')
 
 # 首页路由
 @app.route('/')
@@ -326,7 +406,10 @@ def update_admin_settings():
                 success = success or '设置更新成功'
     
     # 处理公告修改
-    admin_config['announcement'] = announcement
+    # 只有当表单中包含announcement字段并且有值时才更新公告内容
+    # 这样当用户只修改界面设置（不包含announcement字段）时，不会覆盖原有公告
+    if 'announcement' in request.form and request.form.get('announcement') is not None:
+        admin_config['announcement'] = announcement
     
     # 处理背景图上传
     if 'background_image' in request.files:
@@ -357,6 +440,37 @@ def update_admin_settings():
                     success = '背景图更新成功' if not success else success
                 except Exception as e:
                     error = error or f'上传背景图时出错: {str(e)}'
+
+    
+    # 处理网站图标上传
+    if 'favicon' in request.files:
+        favicon = request.files['favicon']
+        if favicon and favicon.filename:
+            # 检查文件类型
+            allowed_extensions = {'png'}
+            file_ext = favicon.filename.rsplit('.', 1)[1].lower() if '.' in favicon.filename else ''
+            if file_ext not in allowed_extensions:
+                error = error or '不支持的图标格式，请上传PNG格式的图片'
+            else:
+                try:
+                    # 确保图标目录存在
+                    favicon_dir = os.path.join(app.root_path, 'css', 'all')
+                    if not os.path.exists(favicon_dir):
+                        os.makedirs(favicon_dir)
+                    
+                    # 保存上传的图标，替换现有的icon.png
+                    favicon_path = os.path.join(favicon_dir, 'icon.png')
+                    # 读取上传的图片并转换为PNG格式保存
+                    from PIL import Image
+                    with Image.open(favicon) as img:
+                        # 确保图标尺寸合理
+                        max_size = (256, 256)  # 最大尺寸限制
+                        img.thumbnail(max_size, Image.LANCZOS)
+                        img.save(favicon_path, 'PNG')
+                    
+                    success = '网站图标更新成功' if not success else success
+                except Exception as e:
+                    error = error or f'上传网站图标时出错: {str(e)}'
     
     # 保存配置
     if not error:
@@ -383,6 +497,11 @@ def verify_code():
     if not check_initialized():
         return redirect(url_for('initialize'))
     
+    # 获取用户IP并检查是否被拉黑
+    client_ip = get_client_ip()
+    if is_ip_blocked(client_ip):
+        return abort(403, description='您的IP已被临时限制访问，请5分钟后再试')
+    
     code = request.args.get('code')
     file_data = read_file_data()
     
@@ -398,13 +517,21 @@ def verify_code():
                     pass
             del file_data[code]
             save_file_data(file_data)
+            # 记录失败尝试
+            update_failed_attempts(client_ip, 'verify_code')
             return jsonify({'exists': False, 'message': '文件已过期'})
         
+        # 验证成功，重置失败尝试次数
+        reset_failed_attempts(client_ip, 'verify_code')
         return jsonify({
             'exists': True,
             'filename': file_data[code]['original_filename']
         })
     else:
+        # 验证失败，记录失败尝试
+        is_blocked = update_failed_attempts(client_ip, 'verify_code')
+        if is_blocked:
+            return abort(403, description='您的IP已被临时限制访问，请5分钟后再试')
         return jsonify({'exists': False, 'message': '取件码不存在'})
 
 # 下载文件路由
@@ -412,6 +539,11 @@ def verify_code():
 def download_file():
     if not check_initialized():
         return redirect(url_for('initialize'))
+    
+    # 获取用户IP并检查是否被拉黑
+    client_ip = get_client_ip()
+    if is_ip_blocked(client_ip):
+        return abort(403, description='您的IP已被临时限制访问，请5分钟后再试')
     
     # 获取更新后的防二次下载取件码
     new_code = request.args.get('new_code')
@@ -428,6 +560,9 @@ def download_file():
                 # 对中文文件名进行url编码，确保HTTP响应头正确
                 encoded_filename = urllib.parse.quote(original_filename)
                 
+                # 下载成功，重置失败尝试次数
+                reset_failed_attempts(client_ip, 'download_file')
+                
                 # 返回文件供下载
                 return app.response_class(
                     open(file_path, 'rb').read(),
@@ -440,13 +575,25 @@ def download_file():
                 )
             except Exception as e:
                 print(f"下载文件时出错: {e}")
+                # 记录失败尝试
+                is_blocked = update_failed_attempts(client_ip, 'download_file')
+                if is_blocked:
+                    return abort(403, description='您的IP已被临时限制访问，请5分钟后再试')
                 return jsonify({'success': False, 'message': '下载文件时出错'})
         else:
             # 文件不存在，清理记录
             del file_data[new_code]
             save_file_data(file_data)
+            # 记录失败尝试
+            is_blocked = update_failed_attempts(client_ip, 'download_file')
+            if is_blocked:
+                return abort(403, description='您的IP已被临时限制访问，请5分钟后再试')
             return jsonify({'success': False, 'message': '文件不存在'})
     else:
+        # 记录失败尝试
+        is_blocked = update_failed_attempts(client_ip, 'download_file')
+        if is_blocked:
+            return abort(403, description='您的IP已被临时限制访问，请5分钟后再试')
         return jsonify({'success': False, 'message': '更新后的取件码无效'})
 
 # 更新取件码和有效期路由
@@ -512,6 +659,31 @@ def get_announcement_route():
     announcement = config.get('announcement', '')
     return jsonify({'announcement': announcement})
 
+# 重启后端API（仅管理员可访问）
+@app.route('/admin/restart_backend', methods=['POST'])
+def restart_backend():
+    # 检查用户是否已登录管理员账户
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'message': '权限不足，请先登录管理员账户'})
+    
+    # 记录重启日志
+    print(f"[{datetime.now()}] 管理员触发后端重启")
+    
+    # 返回成功响应，让前端知道重启即将开始
+    response = jsonify({'success': True, 'message': '后端重启中，请稍候...'})
+    
+    # 在后台线程中执行重启，确保响应能够先发送给前端
+    import threading
+    def restart():
+        # 使用os.execl实现进程重启
+        python = sys.executable
+        os.execl(python, python, *sys.argv)
+    
+    # 启动后台线程进行重启
+    threading.Thread(target=restart).start()
+    
+    return response
+
 def create_template_files(template_folder):
     # initialize.html
     with open(os.path.join(template_folder, 'initialize.html'), 'w', encoding='utf-8') as f:
@@ -521,7 +693,7 @@ def create_template_files(template_folder):
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>快递柜初始化</title>
-    <link rel="icon" href="/css/all/Jsoft_logo.png" type="image/png">
+    <link rel="icon" href="/css/all/icon.png" type="image/png">
     <link rel="stylesheet" href="/css/index/style.css">
     <style>
         .box {
@@ -590,7 +762,7 @@ def create_template_files(template_folder):
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理员登录</title>
-    <link rel="icon" href="/css/all/Jsoft_logo.png" type="image/png">
+    <link rel="icon" href="/css/all/icon.png" type="image/png">
     <link rel="stylesheet" href="/css/index/style.css">
     <style>
         .box {
@@ -667,7 +839,7 @@ def create_template_files(template_folder):
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理员面板</title>
-    <link rel="icon" href="/css/all/Jsoft_logo.png" type="image/png">
+    <link rel="icon" href="/css/all/icon.png" type="image/png">
     <link rel="stylesheet" href="/css/index/style.css">
     <style>
         .box {
@@ -796,7 +968,7 @@ def create_template_files(template_folder):
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>上传文件</title>
-    <link rel="icon" href="/css/all/Jsoft_logo.png" type="image/png">
+    <link rel="icon" href="/css/all/icon.png" type="image/png">
     <link rel="stylesheet" href="/css/index/style.css">
     <style>
         .box {

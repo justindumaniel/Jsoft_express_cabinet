@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理员面板</title>
-    <link rel="icon" href="/css/all/Jsoft_logo.png" type="image/png">
+    <link rel="icon" href="/css/all/icon.png" type="image/png">
     <link rel="stylesheet" href="/css/index/style.css">
     <style>
             .box {
@@ -25,8 +25,27 @@
                 transition: background-color 0.3s ease;
             }
             .logout-btn:hover {
-                background-color: #d32f2f;
-            }
+            background-color: #d32f2f;
+        }
+        
+        /* 重启后端按钮样式 */
+        .restart-btn {
+            position: absolute;
+            top: 20px;
+            right: 120px;
+            padding: 8px 16px;
+            background-color: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background-color 0.3s ease;
+        }
+        
+        .restart-btn:hover {
+            background-color: #1976D2;
+        }
             
             /* 分页切换样式 */
             .tab-container {
@@ -269,7 +288,8 @@
         </style>
 </head>
 <body class="admin-page">
-    <a href="{{ url_for('admin_logout') }}"><button class="logout-btn">退出登录</button></a>
+    <button id="restart-btn" class="restart-btn">重启后端</button>
+<a href="{{ url_for('admin_logout') }}"><button class="logout-btn">退出登录</button></a>
     <div class="container admin-container">
         <div class="box">
             <!-- 分页切换 -->
@@ -391,7 +411,28 @@
                         </div>
                     </div>
                     
-                    <button type="submit" class="btn update-btn">更新背景图</button>
+                    <!-- 网站图标设置 -->
+                    <div class="setting-section">
+                        <h3>网页图标设置</h3>
+                        <div class="form-group">
+                            <label for="favicon">上传新图标</label>
+                            <div class="file-upload-container">
+                                <input type="file" id="favicon" name="favicon" accept="image/*">
+                                <label for="favicon" class="file-label">选择图标</label>
+                                <span id="selected-favicon" class="file-name">未选择图标</span>
+                            </div>
+                            <p class="note">支持PNG格式，建议尺寸：32x32像素或64x64像素，文件大小不超过1MB</p>
+                        </div>
+                        
+                        <div class="current-bg-preview">
+                            <h4>当前图标预览</h4>
+                            <div class="preview-container">
+                                <img id="current-favicon" src="/css/all/icon.png" alt="当前图标" class="bg-preview" style="max-width: 64px; max-height: 64px;">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn update-btn">更新设置</button>
                     {% if error %}
                         <div class="error">{{ error }}</div>
                     {% endif %}
@@ -427,6 +468,7 @@
                 const fileInput = document.getElementById('background_image');
                 const selectedImage = document.getElementById('selected-image');
                 
+                // 背景图文件选择
                 if (fileInput && selectedImage) {
                     fileInput.addEventListener('change', function() {
                         if (this.files && this.files[0]) {
@@ -437,22 +479,143 @@
                     });
                 }
                 
-                // 添加图片预览更新功能，确保每次切换到界面设置时都能显示最新背景
+                // 网站图标文件选择
+                const faviconInput = document.getElementById('favicon');
+                const selectedFavicon = document.getElementById('selected-favicon');
+                
+                if (faviconInput && selectedFavicon) {
+                    faviconInput.addEventListener('change', function() {
+                        if (this.files && this.files[0]) {
+                            selectedFavicon.textContent = this.files[0].name;
+                        } else {
+                            selectedFavicon.textContent = '未选择图标';
+                        }
+                    });
+                }
+                
+                // 添加预览更新功能，确保每次切换到界面设置时都能显示最新背景和图标
                 const interfaceTab = document.querySelector('.tab[onclick="switchTab(\'interface\')"]');
                 if (interfaceTab) {
                     interfaceTab.addEventListener('click', function() {
                         setTimeout(function() {
+                            // 更新背景图预览
                             const bgPreview = document.getElementById('current-bg-image');
                             if (bgPreview) {
                                 // 添加随机参数防止缓存
                                 const timestamp = new Date().getTime();
                                 bgPreview.src = '/css/all/bg.png?t=' + timestamp;
                             }
+                            
+                            // 更新图标预览
+                            const faviconPreview = document.getElementById('current-favicon');
+                            if (faviconPreview) {
+                                // 添加随机参数防止缓存
+                                const timestamp = new Date().getTime();
+                                faviconPreview.src = '/css/all/icon.png?t=' + timestamp;
+                            }
                         }, 100);
                     });
                 }
             });
         </script>
+    
+    <script>
+        // 重启后端按钮功能
+        document.getElementById('restart-btn').addEventListener('click', function() {
+            // 检查浏览器是否支持通知
+            if (!('Notification' in window)) {
+                alert('您的浏览器不支持通知功能，请手动刷新页面尝试重启后端');
+                return;
+            }
+            
+            // 请求通知权限
+            if (Notification.permission === 'default') {
+                Notification.requestPermission().then(function(permission) {
+                    if (permission === 'granted') {
+                        showRestartConfirmNotification();
+                    } else {
+                        // 权限未授予，使用alert替代
+                        showRestartConfirmAlert();
+                    }
+                });
+            } else if (Notification.permission === 'granted') {
+                showRestartConfirmNotification();
+            } else {
+                // 通知被拒绝，使用alert替代
+                showRestartConfirmAlert();
+            }
+        });
+        
+        // 显示重启确认通知
+        function showRestartConfirmNotification() {
+            // 创建通知
+            const notification = new Notification('确认重启后端', {
+                body: '确定要重启后端吗？此功能应仅在故障时使用',
+                icon: '/css/all/icon.png',
+                tag: 'restart-confirm'
+            });
+            
+            // 点击通知确认重启
+            notification.onclick = function() {
+                restartBackend();
+                notification.close();
+            };
+            
+            // 5秒后自动关闭通知
+            setTimeout(function() {
+                notification.close();
+            }, 5000);
+        }
+        
+        // 显示重启确认弹窗（当通知不可用时）
+        function showRestartConfirmAlert() {
+            if (confirm('确定要重启后端吗？此功能应仅在故障时使用')) {
+                restartBackend();
+            }
+        }
+        
+        // 重启后端函数
+        function restartBackend() {
+            // 发送AJAX请求到后端重启API
+            fetch('/admin/restart_backend', {
+                method: 'POST',
+                credentials: 'same-origin' // 包含cookie以保持会话
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    // 显示重启中提示
+                    alert(data.message + '\n系统将在5秒后自动刷新页面...');
+                    
+                    // 显示倒计时提示
+                    const countdown = 5;
+                    let remaining = countdown;
+                    
+                    const countdownInterval = setInterval(() => {
+                        remaining--;
+                        if (remaining <= 0) {
+                            clearInterval(countdownInterval);
+                            // 后端重启后，刷新页面
+                            window.location.reload();
+                        } else {
+                            // 可以在控制台显示倒计时
+                            console.log(`系统将在${remaining}秒后刷新...`);
+                        }
+                    }, 1000);
+                } else {
+                    alert('重启失败：' + data.message);
+                }
+            })
+            .catch(error => {
+                console.error('请求出错:', error);
+                alert('未收到后端重启反馈，请静待刷新，如超20秒没有刷新，说明操作失败，后端未响应重启请求');
+                // 即使请求失败，也尝试刷新页面
+                setTimeout(function() {
+                    window.location.reload();
+                }, 1000);
+            });
+        }
+    </script>
     </div>
 </div>
 </body>
