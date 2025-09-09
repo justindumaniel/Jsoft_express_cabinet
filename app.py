@@ -8,6 +8,7 @@ import string
 from datetime import datetime, timedelta
 import shutil
 import urllib.parse
+import requests
 
 app = Flask(__name__, static_folder='.', static_url_path='/')
 app.secret_key = ''.join(random.choices(string.ascii_letters + string.digits, k=24))
@@ -255,7 +256,13 @@ def admin_panel():
     max_file_size = get_max_file_size()
     announcement = get_announcement()
     
-    return render_template('admin_panel.html', files=file_data, max_file_size=max_file_size, announcement=announcement)
+    # 获取OneBot设置
+    admin_config = read_admin_config()
+    onebot_port = admin_config.get('onebot_port', '') if admin_config else ''
+    onebot_push = admin_config.get('onebot_push', False) if admin_config else False
+    onebot_group_id = admin_config.get('onebot_group_id', '') if admin_config else ''
+    
+    return render_template('admin_panel.html', files=file_data, max_file_size=max_file_size, announcement=announcement, onebot_port=onebot_port, onebot_push=onebot_push, onebot_group_id=onebot_group_id)
 
 # 管理员登出路由
 @app.route('/admin/logout')
@@ -277,9 +284,14 @@ def delete_file(code):
                 os.remove(file_data[code]['file_path'])
             except:
                 pass
+        # 获取原始文件名
+        original_filename = file_data[code]['original_filename']
         # 删除记录
         del file_data[code]
         save_file_data(file_data)
+        
+        # 如果启用了OneBot推送，发送删除文件通知
+        send_onebot_message('delete_file', filename=original_filename)
     
     return redirect(url_for('admin_panel'))
 
@@ -355,6 +367,9 @@ def upload_file():
         }
         save_file_data(file_data)
         
+        # 如果启用了OneBot推送，发送文件上传通知
+        send_onebot_message('upload_file', filename=file.filename)
+        
         return render_template('upload.html', success=True, code=code)
     
     return render_template('upload.html')
@@ -370,8 +385,19 @@ def update_admin_settings():
     if not admin_config:
         return redirect(url_for('admin_login'))
     
+    # 记录原始配置值，用于判断哪些设置被修改
+    original_max_file_size = admin_config.get('max_file_size')
+    original_onebot_push = admin_config.get('onebot_push', False)
+    original_onebot_port = admin_config.get('onebot_port')
+    original_onebot_group_id = admin_config.get('onebot_group_id')
+    original_announcement = admin_config.get('announcement', '')
+    
     error = None
     success = None
+    
+    # 标志变量，用于判断是否修改了背景图或图标
+    background_image_updated = False
+    favicon_updated = False
     
     # 获取表单数据
     current_password = request.form.get('current_password')
@@ -411,6 +437,31 @@ def update_admin_settings():
     if 'announcement' in request.form and request.form.get('announcement') is not None:
         admin_config['announcement'] = announcement
     
+    # 处理OneBot设置
+    # checkbox提交时，存在表示勾选，不存在表示未勾选
+    admin_config['onebot_push'] = 'onebot_push' in request.form
+    
+    if 'onebot_port' in request.form:
+        onebot_port = request.form.get('onebot_port')
+        if onebot_port:
+            try:
+                port = int(onebot_port)
+                if 1024 <= port <= 65535:
+                    admin_config['onebot_port'] = port
+                else:
+                    error = error or '端口号必须在1024-65535之间'
+            except ValueError:
+                error = error or '请输入有效的端口号'
+    
+    if 'onebot_group_id' in request.form:
+        onebot_group_id = request.form.get('onebot_group_id')
+        if onebot_group_id:
+            # 验证QQ群号格式（纯数字）
+            if not onebot_group_id.isdigit():
+                error = error or 'QQ群号必须是纯数字'
+            else:
+                admin_config['onebot_group_id'] = onebot_group_id
+    
     # 处理背景图上传
     if 'background_image' in request.files:
         background_image = request.files['background_image']
@@ -437,6 +488,7 @@ def update_admin_settings():
                         img.thumbnail(max_size, Image.LANCZOS)
                         img.save(bg_path, 'PNG')
                     
+                    background_image_updated = True
                     success = '背景图更新成功' if not success else success
                 except Exception as e:
                     error = error or f'上传背景图时出错: {str(e)}'
@@ -468,6 +520,7 @@ def update_admin_settings():
                         img.thumbnail(max_size, Image.LANCZOS)
                         img.save(favicon_path, 'PNG')
                     
+                    favicon_updated = True
                     success = '网站图标更新成功' if not success else success
                 except Exception as e:
                     error = error or f'上传网站图标时出错: {str(e)}'
@@ -475,6 +528,23 @@ def update_admin_settings():
     # 保存配置
     if not error:
         save_admin_config(admin_config)
+        
+        # 检查是否有设置被修改
+        max_file_size_changed = original_max_file_size != admin_config.get('max_file_size')
+        bg_changed = background_image_updated
+        icon_changed = favicon_updated
+        
+        # 如果有任何设置被修改，并且启用了OneBot推送，发送设置修改通知
+        if (max_file_size_changed or bg_changed or icon_changed or 
+            original_onebot_push != admin_config.get('onebot_push', False) or 
+            original_onebot_port != admin_config.get('onebot_port') or 
+            original_onebot_group_id != admin_config.get('onebot_group_id') or 
+            original_announcement != admin_config.get('announcement', '')):
+            
+            send_onebot_message('update_settings', 
+                              max_file_size_changed=max_file_size_changed, 
+                              background_changed=bg_changed, 
+                              icon_changed=icon_changed)
         
     # 重新获取文件数据和设置
     check_expired_files()
@@ -488,8 +558,31 @@ def update_admin_settings():
                           files=file_data, 
                           max_file_size=admin_config['max_file_size'], 
                           announcement=admin_config['announcement'],
+                          onebot_port=admin_config.get('onebot_port', ''),
+                          onebot_push=admin_config.get('onebot_push', False),
+                          onebot_group_id=admin_config.get('onebot_group_id', ''),
                           error=error,
                           success=success)
+
+
+    
+    # 如果启用了OneBot推送，发送系统重启通知
+    send_onebot_message('restart')
+    
+    # 返回成功响应，让前端知道重启即将开始
+    response = jsonify({'success': True, 'message': '后端重启中，请稍候...'})
+    
+    # 在后台线程中执行重启，确保响应能够先发送给前端
+    import threading
+    def restart():
+        # 使用os.execl实现进程重启
+        python = sys.executable
+        os.execl(python, python, *sys.argv)
+    
+    # 启动后台线程进行重启
+    threading.Thread(target=restart).start()
+    
+    return response
 
 # 验证取件码路由
 @app.route('/verify_code')
@@ -659,6 +752,19 @@ def get_announcement_route():
     announcement = config.get('announcement', '')
     return jsonify({'announcement': announcement})
 
+# 测试推送路由
+@app.route('/admin/test_push', methods=['POST'])
+def test_push():
+    if not session.get('admin_logged_in'):
+        return jsonify({'success': False, 'message': '请先登录'})
+    
+    try:
+        # 调用send_onebot_message函数发送测试推送
+        send_onebot_message('test')
+        return jsonify({'success': True, 'message': '测试推送发送成功'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
+
 # 重启后端API（仅管理员可访问）
 @app.route('/admin/restart_backend', methods=['POST'])
 def restart_backend():
@@ -668,6 +774,9 @@ def restart_backend():
     
     # 记录重启日志
     print(f"[{datetime.now()}] 管理员触发后端重启")
+    
+    # 如果启用了OneBot推送，发送系统重启通知
+    send_onebot_message('restart')
     
     # 返回成功响应，让前端知道重启即将开始
     response = jsonify({'success': True, 'message': '后端重启中，请稍候...'})
@@ -1151,6 +1260,81 @@ def create_template_files(template_folder):
     </script>
 </body>
 </html>''')
+
+# OneBot推送函数
+def send_onebot_message(message_type, **kwargs):
+    """用于向OneBot发送群消息推送
+       message_type: 消息类型 (upload_file, update_settings, delete_file, restart, test)
+       **kwargs: 消息所需的参数
+    """
+    # 从配置中获取OneBot相关设置
+    admin_config = read_admin_config()
+    if not admin_config:
+        print("OneBot推送失败: 无法读取配置")
+        return
+    
+    # 检查推送开关是否开启
+    if not admin_config.get('onebot_push', False):
+        return  # 推送开关未开启，不进行推送
+    
+    # 获取端口号和群号
+    port = admin_config.get('onebot_port')
+    group_id = admin_config.get('onebot_group_id')
+    
+    # 验证端口和群号
+    if not port or not group_id:
+        print("OneBot推送失败: 未配置端口号或群号")
+        return
+    
+    try:
+        port = int(port)
+        if port < 1024 or port > 65535:
+            print("OneBot推送失败: 端口号无效")
+            return
+        
+        # 验证群号格式
+        if not str(group_id).isdigit():
+            print("OneBot推送失败: 群号格式无效")
+            return
+        
+        # 获取当前时间
+        current_time = datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+        
+        # 根据消息类型生成不同的消息内容
+        if message_type == 'upload_file':
+            file_name = kwargs.get('file_name', '未知文件名')
+            message = f"【文件快递柜】文件上传\n时间：{current_time}\n文件名：{file_name}"
+        elif message_type == 'update_settings':
+            modify_file_size = kwargs.get('modify_file_size', False)
+            modify_background = kwargs.get('modify_background', False)
+            modify_icon = kwargs.get('modify_icon', False)
+            message = f"【文件快递柜】全局设置修改\n时间：{current_time}\n是否修改最大文件大小：{'是' if modify_file_size else '否'}\n是否修改背景图：{'是' if modify_background else '否'}\n是否修改图标：{'是' if modify_icon else '否'}"
+        elif message_type == 'delete_file':
+            file_name = kwargs.get('file_name', '未知文件名')
+            message = f"【文件快递柜】管理员删除文件\n时间：{current_time}\n文件名：{file_name}"
+        elif message_type == 'restart':
+            message = f"【文件快递柜】系统重启\n时间：{current_time}"
+        elif message_type == 'test':
+            message = f"【文件快递柜】测试推送\n时间：{current_time}"
+        else:
+            print(f"OneBot推送失败: 未知的消息类型 {message_type}")
+            return
+        
+        # 发送推送消息
+        requests.post(f'http://localhost:{port}/send_group_msg', json={
+            'group_id': group_id,
+            'message': [{
+                'type': 'text',
+                'data': {
+                    'text': message
+                }
+            }]
+        }, timeout=3)  # 添加超时设置避免请求阻塞
+        
+    except Exception as e:
+        # 错误处理，避免影响主程序运行
+        print(f"OneBot推送失败: {str(e)}")
+
 
 if __name__ == '__main__':
     # 确保templates目录存在

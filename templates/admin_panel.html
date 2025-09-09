@@ -6,286 +6,7 @@
     <title>管理员面板</title>
     <link rel="icon" href="/css/all/icon.png" type="image/png">
     <link rel="stylesheet" href="/css/index/style.css">
-    <style>
-            .box {
-                max-width: 800px;
-                width: 90%;
-            }
-            .logout-btn {
-                position: absolute;
-                top: 20px;
-                right: 20px;
-                padding: 8px 16px;
-                background-color: #f44336;
-                color: white;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                font-size: 14px;
-                transition: background-color 0.3s ease;
-            }
-            .logout-btn:hover {
-            background-color: #d32f2f;
-        }
-        
-        /* 重启后端按钮样式 */
-        .restart-btn {
-            position: absolute;
-            top: 20px;
-            right: 120px;
-            padding: 8px 16px;
-            background-color: #2196F3;
-            color: white;
-            border: none;
-            border-radius: 5px;
-            cursor: pointer;
-            font-size: 14px;
-            transition: background-color 0.3s ease;
-        }
-        
-        .restart-btn:hover {
-            background-color: #1976D2;
-        }
-            
-            /* 分页切换样式 */
-            .tab-container {
-                display: flex;
-                margin-bottom: 20px;
-                border-bottom: 2px solid #ddd;
-            }
-            .tab {
-                padding: 10px 20px;
-                cursor: pointer;
-                background-color: #f1f1f1;
-                border: none;
-                border-top-left-radius: 5px;
-                border-top-right-radius: 5px;
-                font-size: 16px;
-                transition: all 0.3s ease;
-                margin-right: 2px;
-            }
-            .tab.active {
-                background-color: white;
-                border-bottom: 2px solid #2196F3;
-                font-weight: bold;
-                color: #2196F3;
-            }
-            .tab:hover:not(.active) {
-                background-color: #ddd;
-            }
-            
-            /* 文件管理样式 */
-            table {
-                width: 100%;
-                border-collapse: collapse;
-                margin-top: 20px;
-            }
-            th, td {
-                padding: 12px;
-                text-align: left;
-                border-bottom: 1px solid #ddd;
-            }
-            th {
-                background-color: rgba(255, 255, 255, 0.5);
-                font-weight: bold;
-            }
-            tr:hover {
-                background-color: rgba(255, 255, 255, 0.3);
-            }
-            .action-btn {
-                padding: 5px 10px;
-                border: none;
-                border-radius: 5px;
-                cursor: pointer;
-                font-size: 12px;
-                transition: background-color 0.3s ease;
-            }
-            .delete-btn {
-                background-color: #f44336;
-                color: white;
-            }
-            .delete-btn:hover {
-                background-color: #d32f2f;
-            }
-            .update-btn {
-                background-color: #2196F3;
-                color: white;
-            }
-            .update-btn:hover {
-                background-color: #1976D2;
-            }
-            .no-files {
-                text-align: center;
-                padding: 40px;
-                color: #666;
-            }
-            .expire-form {
-                display: inline-block;
-            }
-            .expire-select {
-                padding: 3px 5px;
-                border: 1px solid #ddd;
-                border-radius: 3px;
-                margin-right: 5px;
-            }
-            
-            /* 功能设置页面样式 */
-            .settings-forms {
-                display: flex;
-                flex-direction: column;
-                gap: 30px;
-            }
-            .setting-section {
-                background-color: rgba(255, 255, 255, 0.6);
-                padding: 20px;
-                border-radius: 12px;
-                box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
-                transition: transform 0.3s ease;
-            }
-            .setting-section:hover {
-                transform: translateY(-2px);
-                box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
-            }
-            .setting-section h3 {
-                color: #333;
-                font-size: 18px;
-                margin-bottom: 15px;
-                font-weight: 600;
-                border-bottom: 2px solid #2196F3;
-                padding-bottom: 8px;
-                display: inline-block;
-            }
-            .form-group {
-                margin-bottom: 15px;
-                text-align: left;
-            }
-            .form-group label {
-                display: block;
-                margin-bottom: 5px;
-                color: #555;
-                font-size: 14px;
-            }
-            .form-group input,
-            .form-group textarea {
-                width: 100%;
-                padding: 10px;
-                border: 1px solid #ddd;
-                border-radius: 6px;
-                font-size: 14px;
-                transition: border-color 0.3s ease;
-            }
-            .form-group input:focus,
-            .form-group textarea:focus {
-                outline: none;
-                border-color: #2196F3;
-            }
-            .form-group textarea {
-                resize: vertical;
-                min-height: 100px;
-            }
-            .btn {
-                padding: 10px 20px;
-                border: none;
-                border-radius: 6px;
-                font-size: 16px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-                text-decoration: none;
-                display: inline-block;
-                text-align: center;
-            }
-            .update-btn {
-                background-color: #2196F3;
-                color: white;
-            }
-            .update-btn:hover {
-                background-color: #1976D2;
-                transform: translateY(-2px);
-                box-shadow: 0 4px 10px rgba(33, 150, 243, 0.3);
-            }
-            .error {
-                color: #f44336;
-                margin-top: 10px;
-                padding: 8px 12px;
-                background-color: rgba(244, 67, 54, 0.1);
-                border-radius: 6px;
-                border-left: 3px solid #f44336;
-                font-size: 13px;
-            }
-            .success {
-                color: #4CAF50;
-                margin-top: 10px;
-                padding: 8px 12px;
-                background-color: rgba(76, 175, 80, 0.1);
-                border-radius: 6px;
-                border-left: 3px solid #4CAF50;
-                font-size: 13px;
-            }
-            
-            /* 图片上传样式 */
-            .file-upload-container {
-                display: flex;
-                align-items: center;
-                gap: 10px;
-                margin-top: 5px;
-            }
-            .file-upload-container input[type="file"] {
-                display: none;
-            }
-            .file-label {
-                padding: 10px 20px;
-                background-color: #2196F3;
-                color: white;
-                border-radius: 6px;
-                cursor: pointer;
-                transition: background-color 0.3s ease;
-                font-size: 14px;
-                display: inline-block;
-            }
-            .file-label:hover {
-                background-color: #1976D2;
-            }
-            .file-name {
-                font-size: 13px;
-                color: #666;
-                flex: 1;
-                min-width: 0;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-            }
-            .note {
-                font-size: 12px;
-                color: #888;
-                margin-top: 5px;
-                font-style: italic;
-            }
-            
-            /* 背景图预览样式 */
-            .current-bg-preview {
-                margin-top: 20px;
-            }
-            .current-bg-preview h4 {
-                font-size: 14px;
-                color: #555;
-                margin-bottom: 10px;
-            }
-            .preview-container {
-                background-color: rgba(255, 255, 255, 0.8);
-                padding: 10px;
-                border-radius: 8px;
-                text-align: center;
-                max-width: 400px;
-                margin: 0 auto;
-            }
-            .bg-preview {
-                max-width: 100%;
-                max-height: 200px;
-                object-fit: contain;
-                border-radius: 4px;
-                border: 1px solid #ddd;
-            }
-        </style>
+    <link rel="stylesheet" href="/css/admin_panel/admin_panel.css">
 </head>
 <body class="admin-page">
     <button id="restart-btn" class="restart-btn">重启后端</button>
@@ -297,6 +18,7 @@
                 <button class="tab active" onclick="switchTab('files')">文件管理</button>
                 <button class="tab" onclick="switchTab('settings')">功能设置</button>
                 <button class="tab" onclick="switchTab('interface')">界面设置</button>
+                <button class="tab" onclick="switchTab('onebot')">OneBot连接</button>
             </div>
             
             <!-- 文件管理内容 -->
@@ -443,179 +165,57 @@
             </form>
         </div>
         
-        <script>
-            // 标签切换功能
-            function switchTab(tabId) {
-                // 隐藏所有标签内容
-                const tabContents = document.querySelectorAll('.tab-content');
-                tabContents.forEach(content => {
-                    content.style.display = 'none';
-                });
-                
-                // 移除所有标签的激活状态
-                const tabs = document.querySelectorAll('.tab');
-                tabs.forEach(tab => {
-                    tab.classList.remove('active');
-                });
-                
-                // 显示选中的标签内容并激活对应标签
-                document.getElementById(tabId).style.display = 'block';
-                event.currentTarget.classList.add('active');
-            }
-            
-            // 图片选择预览
-            document.addEventListener('DOMContentLoaded', function() {
-                const fileInput = document.getElementById('background_image');
-                const selectedImage = document.getElementById('selected-image');
-                
-                // 背景图文件选择
-                if (fileInput && selectedImage) {
-                    fileInput.addEventListener('change', function() {
-                        if (this.files && this.files[0]) {
-                            selectedImage.textContent = this.files[0].name;
-                        } else {
-                            selectedImage.textContent = '未选择图片';
-                        }
-                    });
-                }
-                
-                // 网站图标文件选择
-                const faviconInput = document.getElementById('favicon');
-                const selectedFavicon = document.getElementById('selected-favicon');
-                
-                if (faviconInput && selectedFavicon) {
-                    faviconInput.addEventListener('change', function() {
-                        if (this.files && this.files[0]) {
-                            selectedFavicon.textContent = this.files[0].name;
-                        } else {
-                            selectedFavicon.textContent = '未选择图标';
-                        }
-                    });
-                }
-                
-                // 添加预览更新功能，确保每次切换到界面设置时都能显示最新背景和图标
-                const interfaceTab = document.querySelector('.tab[onclick="switchTab(\'interface\')"]');
-                if (interfaceTab) {
-                    interfaceTab.addEventListener('click', function() {
-                        setTimeout(function() {
-                            // 更新背景图预览
-                            const bgPreview = document.getElementById('current-bg-image');
-                            if (bgPreview) {
-                                // 添加随机参数防止缓存
-                                const timestamp = new Date().getTime();
-                                bgPreview.src = '/css/all/bg.png?t=' + timestamp;
-                            }
-                            
-                            // 更新图标预览
-                            const faviconPreview = document.getElementById('current-favicon');
-                            if (faviconPreview) {
-                                // 添加随机参数防止缓存
-                                const timestamp = new Date().getTime();
-                                faviconPreview.src = '/css/all/icon.png?t=' + timestamp;
-                            }
-                        }, 100);
-                    });
-                }
-            });
-        </script>
-    
-    <script>
-        // 重启后端按钮功能
-        document.getElementById('restart-btn').addEventListener('click', function() {
-            // 检查浏览器是否支持通知
-            if (!('Notification' in window)) {
-                alert('您的浏览器不支持通知功能，请手动刷新页面尝试重启后端');
-                return;
-            }
-            
-            // 请求通知权限
-            if (Notification.permission === 'default') {
-                Notification.requestPermission().then(function(permission) {
-                    if (permission === 'granted') {
-                        showRestartConfirmNotification();
-                    } else {
-                        // 权限未授予，使用alert替代
-                        showRestartConfirmAlert();
-                    }
-                });
-            } else if (Notification.permission === 'granted') {
-                showRestartConfirmNotification();
-            } else {
-                // 通知被拒绝，使用alert替代
-                showRestartConfirmAlert();
-            }
-        });
-        
-        // 显示重启确认通知
-        function showRestartConfirmNotification() {
-            // 创建通知
-            const notification = new Notification('确认重启后端', {
-                body: '确定要重启后端吗？此功能应仅在故障时使用',
-                icon: '/css/all/icon.png',
-                tag: 'restart-confirm'
-            });
-            
-            // 点击通知确认重启
-            notification.onclick = function() {
-                restartBackend();
-                notification.close();
-            };
-            
-            // 5秒后自动关闭通知
-            setTimeout(function() {
-                notification.close();
-            }, 5000);
-        }
-        
-        // 显示重启确认弹窗（当通知不可用时）
-        function showRestartConfirmAlert() {
-            if (confirm('确定要重启后端吗？此功能应仅在故障时使用')) {
-                restartBackend();
-            }
-        }
-        
-        // 重启后端函数
-        function restartBackend() {
-            // 发送AJAX请求到后端重启API
-            fetch('/admin/restart_backend', {
-                method: 'POST',
-                credentials: 'same-origin' // 包含cookie以保持会话
-            })
-            .then(response => response.json())
-            .then(data => {
-                if (data.success) {
-                    // 显示重启中提示
-                    alert(data.message + '\n系统将在5秒后自动刷新页面...');
+        <!-- OneBot连接内容 -->
+        <div id="onebot" class="tab-content" style="display: none;">
+            <form method="post" action="{{ url_for('update_admin_settings') }}">
+                <div class="settings-forms">
+                    <!-- 推送设置 -->
+                    <div class="setting-section">
+                        <h3>推送开关</h3>
+                        <div class="form-group">
+                            <div class="switch-container">
+                                <span class="switch-label">推送开关</span>
+                                <label class="switch">
+                                    <input type="checkbox" id="onebot_push" name="onebot_push"{% if onebot_push %} checked{% endif %}>
+                                    <span class="switch-slider"></span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
                     
-                    // 显示倒计时提示
-                    const countdown = 5;
-                    let remaining = countdown;
+                    <!-- 连接配置 -->
+                    <div class="setting-section">
+                        <h3>连接配置</h3>
+                        <div class="form-group">
+                            <label for="onebot_port">本地OneBot端口</label>
+                            <input type="number" id="onebot_port" name="onebot_port" value="{{ onebot_port }}" placeholder="请输入端口号" min="1024" max="65535" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="onebot_group_id">QQ群号</label>
+                            <input type="text" id="onebot_group_id" name="onebot_group_id" value="{{ onebot_group_id }}" placeholder="请输入QQ群号" required>
+                        </div>
+                    </div>
                     
-                    const countdownInterval = setInterval(() => {
-                        remaining--;
-                        if (remaining <= 0) {
-                            clearInterval(countdownInterval);
-                            // 后端重启后，刷新页面
-                            window.location.reload();
-                        } else {
-                            // 可以在控制台显示倒计时
-                            console.log(`系统将在${remaining}秒后刷新...`);
-                        }
-                    }, 1000);
-                } else {
-                    alert('重启失败：' + data.message);
-                }
-            })
-            .catch(error => {
-                console.error('请求出错:', error);
-                alert('未收到后端重启反馈，请静待刷新，如超20秒没有刷新，说明操作失败，后端未响应重启请求');
-                // 即使请求失败，也尝试刷新页面
-                setTimeout(function() {
-                    window.location.reload();
-                }, 1000);
-            });
-        }
-    </script>
+                    <!-- 功能测试 -->
+                    <div class="setting-section">
+                        <h3>功能测试</h3>
+                        <div class="form-group">
+                            <button type="button" id="test_push_btn" class="btn update-btn">测试推送</button>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn update-btn">保存设置</button>
+                    {% if error %}
+                        <div class="error">{{ error }}</div>
+                    {% endif %}
+                    {% if success %}
+                        <div class="success">{{ success }}</div>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+        
+        <script src="/js/admin_panel/admin_panel.js"></script>
     </div>
 </div>
 </body>
