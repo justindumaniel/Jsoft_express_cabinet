@@ -24,35 +24,41 @@
             <!-- 文件管理内容 -->
             <div id="files" class="tab-content">
             {% if files %}
-                <table>
-                    <tr>
-                        <th>取件码</th>
-                        <th>文件名</th>
-                        <th>大小</th>
-                        <th>过期时间</th>
-                        <th>操作</th>
-                    </tr>
-                    {% for code, info in files.items() %}
-                        <tr>
-                            <td>{{ code }}</td>
-                            <td>{{ info.original_filename }}</td>
-                            <td>{{ "%.2f MB"|format(info.size / (1024 * 1024)) }}</td>
-                            <td>{{ info.formatted_expire_time }}</td>
-                            <td>
-                                <form class="expire-form" method="post" action="{{ url_for('update_expire', code=code) }}">
-                                    <select name="hours" class="expire-select">
-                                        <option value="1">1小时</option>
-                                        <option value="3">3小时</option>
-                                        <option value="10">10小时</option>
-                                        <option value="24">24小时</option>
-                                    </select>
-                                    <button type="submit" class="action-btn update-btn">更新</button>
-                                </form>
-                                <a href="{{ url_for('delete_file', code=code) }}" onclick="return confirm('确定要删除这个文件吗？');"><button class="action-btn delete-btn">删除</button></a>
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </table>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>取件码</th>
+                                <th>文件名</th>
+                                <th>大小</th>
+                                <th>过期时间</th>
+                                <th>操作</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for code, info in files.items() %}
+                                <tr>
+                                    <td>{{ code }}</td>
+                                    <td>{{ info.original_filename }}</td>
+                                    <td>{{ "%.2f MB"|format(info.size / (1024 * 1024)) }}</td>
+                                    <td>{{ info.formatted_expire_time }}</td>
+                                    <td>
+                                        <form class="expire-form" method="post" action="{{ url_for('update_expire', code=code) }}">
+                                            <select name="hours" class="expire-select">
+                                                <option value="1">1小时</option>
+                                                <option value="3">3小时</option>
+                                                <option value="10">10小时</option>
+                                                <option value="24">24小时</option>
+                                            </select>
+                                            <button type="submit" class="action-btn update-btn">更新</button>
+                                        </form>
+                                        <a href="{{ url_for('delete_file', code=code) }}" onclick="return confirm('确定要删除这个文件吗？');"><button class="action-btn delete-btn">删除</button></a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             {% else %}
                 <div class="no-files">暂无文件</div>
             {% endif %}

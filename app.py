@@ -438,8 +438,16 @@ def update_admin_settings():
         admin_config['announcement'] = announcement
     
     # 处理OneBot设置
-    # checkbox提交时，存在表示勾选，不存在表示未勾选
-    admin_config['onebot_push'] = 'onebot_push' in request.form
+    # 只有当表单中包含相应字段时才更新设置，避免只修改界面设置时覆盖原有设置
+    if 'onebot_push' in request.form:
+        # checkbox提交时，存在表示勾选，不存在表示未勾选
+        admin_config['onebot_push'] = True
+    elif 'onebot_push' not in request.form and 'onebot_port' not in request.form and 'onebot_group_id' not in request.form:
+        # 如果表单中不包含任何OneBot相关字段，则不修改现有设置
+        pass
+    else:
+        # 如果表单中包含其他OneBot相关字段但不包含onebot_push，则视为未勾选
+        admin_config['onebot_push'] = False
     
     if 'onebot_port' in request.form:
         onebot_port = request.form.get('onebot_port')
@@ -1302,20 +1310,22 @@ def send_onebot_message(message_type, **kwargs):
         
         # 根据消息类型生成不同的消息内容
         if message_type == 'upload_file':
-            file_name = kwargs.get('file_name', '未知文件名')
+            file_name = kwargs.get('filename', '获取失败')
             message = f"【文件快递柜】文件上传\n时间：{current_time}\n文件名：{file_name}"
         elif message_type == 'update_settings':
-            modify_file_size = kwargs.get('modify_file_size', False)
-            modify_background = kwargs.get('modify_background', False)
-            modify_icon = kwargs.get('modify_icon', False)
-            message = f"【文件快递柜】全局设置修改\n时间：{current_time}\n是否修改最大文件大小：{'是' if modify_file_size else '否'}\n是否修改背景图：{'是' if modify_background else '否'}\n是否修改图标：{'是' if modify_icon else '否'}"
+            max_file_size_changed = kwargs.get('max_file_size_changed', False)
+            background_changed = kwargs.get('background_changed', False)
+            icon_changed = kwargs.get('icon_changed', False)
+            message = f"【文件快递柜】全局设置修改\n时间：{current_time}\n是否修改最大文件大小：{'是' if max_file_size_changed else '否'}\n是否修改背景图：{'是' if background_changed else '否'}\n是否修改图标：{'是' if icon_changed else '否'}"
         elif message_type == 'delete_file':
-            file_name = kwargs.get('file_name', '未知文件名')
+            file_name = kwargs.get('filename', '获取失败')
             message = f"【文件快递柜】管理员删除文件\n时间：{current_time}\n文件名：{file_name}"
         elif message_type == 'restart':
             message = f"【文件快递柜】系统重启\n时间：{current_time}"
         elif message_type == 'test':
             message = f"【文件快递柜】测试推送\n时间：{current_time}"
+        elif message_type == 'system_start':
+            message = f"【文件快递柜】系统启动\n时间：{current_time}"
         else:
             print(f"OneBot推送失败: 未知的消息类型 {message_type}")
             return
@@ -1342,5 +1352,8 @@ if __name__ == '__main__':
     if not os.path.exists(template_folder):
         os.makedirs(template_folder)
         create_template_files(template_folder)
+    
+    # 发送系统启动推送
+    send_onebot_message('system_start')
     
     app.run(debug=True, host='0.0.0.0', port=23478)

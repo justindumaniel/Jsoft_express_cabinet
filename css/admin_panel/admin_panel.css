@@ -89,10 +89,34 @@
 }
 
 /* 文件管理样式 */
+.table-container {
+    overflow-x: auto;
+    margin-top: 20px;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table-container::-webkit-scrollbar {
+    height: 8px;
+}
+
+.table-container::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 4px;
+}
+
+.table-container::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
 table {
     width: 100%;
+    min-width: 600px; /* 确保表格在小屏幕上也有足够的宽度 */
     border-collapse: collapse;
-    margin-top: 20px;
 }
 th, td {
     padding: 12px;
